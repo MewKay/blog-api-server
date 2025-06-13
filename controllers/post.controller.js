@@ -52,4 +52,26 @@ const createPost = async (req, res) => {
   res.json(newPost);
 };
 
-module.exports = { getAllPublishedPosts, getPost, createPost };
+const updatePost = async (req, res) => {
+  const postId = Number(req.params.postId);
+  const { post } = req.body;
+
+  const updatedPost = await prisma.post.update({
+    where: {
+      id: postId,
+    },
+    data: {
+      ...post,
+      edited_at: new Date(),
+    },
+  });
+
+  res.json(updatedPost);
+};
+
+module.exports = {
+  getAllPublishedPosts,
+  getPost,
+  createPost,
+  updatePost,
+};
