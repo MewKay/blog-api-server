@@ -1,7 +1,6 @@
 const router = require("express").Router();
+const { post: controller } = require("../controllers");
 
-router.get("/", (req, res) => {
-  res.json({ message: "This is post" });
-});
+router.get("/", controller.getAllPublishedPosts);
 
 module.exports = router;
