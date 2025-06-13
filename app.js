@@ -1,6 +1,9 @@
 const express = require("express");
 const app = express();
 
+// General Setup
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("Hello server!");
 });
