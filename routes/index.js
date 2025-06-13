@@ -1,3 +1,4 @@
 const post = require("./post.router");
+const author = require("./author.router");
 
-module.exports = { post };
+module.exports = { post, author };
