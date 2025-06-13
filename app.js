@@ -4,9 +4,8 @@ const app = express();
 // General Setup
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello server!");
-});
+const routes = require("./routes");
+app.use("/api/posts", routes.post);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`App listening on PORT : ${PORT}`));
