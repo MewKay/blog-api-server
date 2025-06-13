@@ -39,4 +39,17 @@ const getPost = async (req, res) => {
   res.json(post);
 };
 
-module.exports = { getAllPublishedPosts, getPost };
+const createPost = async (req, res) => {
+  const { userId, ...postData } = req.body.post;
+
+  const newPost = await prisma.post.create({
+    data: {
+      ...postData,
+      author_id: userId,
+    },
+  });
+
+  res.json(newPost);
+};
+
+module.exports = { getAllPublishedPosts, getPost, createPost };
