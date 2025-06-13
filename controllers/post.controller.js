@@ -69,9 +69,22 @@ const updatePost = async (req, res) => {
   res.json(updatedPost);
 };
 
+const deletePost = async (req, res) => {
+  const postId = Number(req.params.postId);
+
+  const deletedPost = await prisma.post.delete({
+    where: {
+      id: postId,
+    },
+  });
+
+  res.json(deletedPost);
+};
+
 module.exports = {
   getAllPublishedPosts,
   getPost,
   createPost,
   updatePost,
+  deletePost,
 };
