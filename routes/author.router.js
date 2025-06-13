@@ -1,7 +1,6 @@
 const router = require("express").Router();
+const { author: controller } = require("../controllers");
 
-router.get("/", (req, res) => {
-  res.send("This is author route");
-});
+router.get("/:authorId/posts", controller.getAuthorPosts);
 
 module.exports = router;
