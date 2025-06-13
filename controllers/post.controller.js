@@ -20,4 +20,23 @@ const getAllPublishedPosts = async (req, res) => {
   res.json(posts);
 };
 
-module.exports = { getAllPublishedPosts };
+const getPost = async (req, res) => {
+  const postId = Number(req.params.postId);
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+    include: {
+      author: {
+        select: {
+          username: true,
+        },
+      },
+    },
+  });
+
+  res.json(post);
+};
+
+module.exports = { getAllPublishedPosts, getPost };
