@@ -44,4 +44,21 @@ const updateComment = async (req, res) => {
   res.json(comment);
 };
 
-module.exports = { getAllCommentsFromPost, createComment, updateComment };
+const deleteComment = async (req, res) => {
+  const commentId = Number(req.params.commentId);
+
+  const comment = await prisma.comment.delete({
+    where: {
+      id: commentId,
+    },
+  });
+
+  res.json(comment);
+};
+
+module.exports = {
+  getAllCommentsFromPost,
+  createComment,
+  updateComment,
+  deleteComment,
+};
