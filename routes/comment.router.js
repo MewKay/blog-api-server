@@ -5,5 +5,6 @@ const router = Router({ mergeParams: true });
 
 router.get("/", controller.getAllCommentsFromPost);
 router.post("/", controller.createComment);
+router.put("/:commentId", controller.updateComment);
 
 module.exports = router;

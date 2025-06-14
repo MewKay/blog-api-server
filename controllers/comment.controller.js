@@ -27,4 +27,21 @@ const createComment = async (req, res) => {
   res.json(comment);
 };
 
-module.exports = { getAllCommentsFromPost, createComment };
+const updateComment = async (req, res) => {
+  const commentId = Number(req.params.commentId);
+  const { text } = req.body.comment;
+
+  const comment = await prisma.comment.update({
+    where: {
+      id: commentId,
+    },
+    data: {
+      text,
+      edited_at: new Date(),
+    },
+  });
+
+  res.json(comment);
+};
+
+module.exports = { getAllCommentsFromPost, createComment, updateComment };
