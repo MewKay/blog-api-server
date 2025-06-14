@@ -12,4 +12,19 @@ const getAllCommentsFromPost = async (req, res) => {
   res.json(comments);
 };
 
-module.exports = { getAllCommentsFromPost };
+const createComment = async (req, res) => {
+  const postId = Number(req.params.postId);
+  const { userId, text } = req.body.comment;
+
+  const comment = await prisma.comment.create({
+    data: {
+      text,
+      user_id: userId,
+      post_id: postId,
+    },
+  });
+
+  res.json(comment);
+};
+
+module.exports = { getAllCommentsFromPost, createComment };
