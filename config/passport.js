@@ -1,5 +1,6 @@
 const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
+const { Strategy: LocalStrategy } = require("passport-local");
+const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 
 const prisma = require("./prisma-client");
 const bcrypt = require("bcryptjs");
@@ -29,5 +30,31 @@ const verifyLocal = async (username, password, done) => {
 };
 
 const localStrategy = new LocalStrategy(verifyLocal);
-
 passport.use(localStrategy);
+
+// Setup JWT Strategy
+const strategyOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET,
+};
+
+const verifyJWT = async (jwtPayload, done) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: jwtPayload.id,
+      },
+    });
+
+    if (!user) {
+      return done(null, false);
+    }
+
+    return done(null, user);
+  } catch (error) {
+    return done(error);
+  }
+};
+
+const jwtStrategy = new JwtStrategy(strategyOptions, verifyJWT);
+passport.use(jwtStrategy);
