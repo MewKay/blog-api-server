@@ -4,6 +4,9 @@ const app = express();
 // General Setup
 app.use(express.json());
 
+// Passport Setup
+require("./config/passport");
+
 const routes = require("./routes");
 app.use("/api/posts", routes.post);
 app.use("/api/authors", routes.author);
