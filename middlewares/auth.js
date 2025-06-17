@@ -46,4 +46,22 @@ const isPostOfAuthor = async (req, res, next) => {
   next();
 };
 
-module.exports = { isAuth, isAuthor, isPostOfAuthor };
+const isCommentOfUser = async (req, res, next) => {
+  const { user } = req;
+  const commentId = Number(req.params.commentId);
+
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+      user_id: user.id,
+    },
+  });
+
+  if (!comment) {
+    return res.status(403).json({ error: "Comment not belonging to user" });
+  }
+
+  next();
+};
+
+module.exports = { isAuth, isAuthor, isPostOfAuthor, isCommentOfUser };

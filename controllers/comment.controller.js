@@ -1,5 +1,9 @@
 const prisma = require("../config/prisma-client");
-const { isAuthor, isPostOfAuthor } = require("../middlewares/auth");
+const {
+  isAuthor,
+  isPostOfAuthor,
+  isCommentOfUser,
+} = require("../middlewares/auth");
 
 const getAllCommentsFromPost = async (req, res) => {
   const postId = Number(req.params.postId);
@@ -28,22 +32,25 @@ const createComment = async (req, res) => {
   res.json(comment);
 };
 
-const updateComment = async (req, res) => {
-  const commentId = Number(req.params.commentId);
-  const { text } = req.body.comment;
+const updateComment = [
+  isCommentOfUser,
+  async (req, res) => {
+    const commentId = Number(req.params.commentId);
+    const { text } = req.body.comment;
 
-  const comment = await prisma.comment.update({
-    where: {
-      id: commentId,
-    },
-    data: {
-      text,
-      edited_at: new Date(),
-    },
-  });
+    const comment = await prisma.comment.update({
+      where: {
+        id: commentId,
+      },
+      data: {
+        text,
+        edited_at: new Date(),
+      },
+    });
 
-  res.json(comment);
-};
+    res.json(comment);
+  },
+];
 
 const deleteComment = [
   isAuthor,
