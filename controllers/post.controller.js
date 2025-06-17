@@ -43,12 +43,13 @@ const getPost = async (req, res) => {
 const createPost = [
   isAuthor,
   async (req, res) => {
-    const { userId, ...postData } = req.body.post;
+    const { user } = req;
+    const post = req.body;
 
     const newPost = await prisma.post.create({
       data: {
-        ...postData,
-        author_id: userId,
+        ...post,
+        author_id: user.id,
       },
     });
 
@@ -61,7 +62,7 @@ const updatePost = [
   isPostOfAuthor,
   async (req, res) => {
     const postId = Number(req.params.postId);
-    const { post } = req.body;
+    const post = req.body;
 
     const updatedPost = await prisma.post.update({
       where: {

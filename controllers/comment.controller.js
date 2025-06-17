@@ -19,12 +19,13 @@ const getAllCommentsFromPost = async (req, res) => {
 
 const createComment = async (req, res) => {
   const postId = Number(req.params.postId);
-  const { userId, text } = req.body.comment;
+  const { user } = req;
+  const { text } = req.body;
 
   const comment = await prisma.comment.create({
     data: {
       text,
-      user_id: userId,
+      user_id: user.id,
       post_id: postId,
     },
   });
@@ -36,11 +37,13 @@ const updateComment = [
   isCommentOfUser,
   async (req, res) => {
     const commentId = Number(req.params.commentId);
-    const { text } = req.body.comment;
+    const postId = Number(req.params.postId);
+    const { text } = req.body;
 
     const comment = await prisma.comment.update({
       where: {
         id: commentId,
+        post_id: postId,
       },
       data: {
         text,
