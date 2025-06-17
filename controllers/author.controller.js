@@ -1,5 +1,4 @@
 const prisma = require("../config/prisma-client");
-const bcrypt = require("bcryptjs");
 const { isAuthor } = require("../middlewares/auth");
 
 const getAuthorPosts = [
@@ -20,19 +19,4 @@ const getAuthorPosts = [
   },
 ];
 
-const createAuthor = async (req, res) => {
-  const { username, password } = req.body.author;
-
-  const newAuthor = await prisma.user.create({
-    data: {
-      username,
-      password: await bcrypt.hash(password, 10),
-      is_author: true,
-    },
-  });
-  delete newAuthor.password;
-
-  res.json(newAuthor);
-};
-
-module.exports = { getAuthorPosts, createAuthor };
+module.exports = { getAuthorPosts };
