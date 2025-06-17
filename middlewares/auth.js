@@ -16,4 +16,14 @@ const isAuth = (req, res, next) => {
   })(req, res, next);
 };
 
-module.exports = { isAuth };
+const isAuthor = (req, res, next) => {
+  const { user } = req;
+
+  if (!user.is_author) {
+    return res.status(403).json({ error: "Forbidden request" });
+  }
+
+  next();
+};
+
+module.exports = { isAuth, isAuthor };

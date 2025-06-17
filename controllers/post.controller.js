@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma-client");
+const { isAuthor } = require("../middlewares/auth");
 
 const getAllPublishedPosts = async (req, res) => {
   const posts = await prisma.post.findMany({
@@ -39,47 +40,56 @@ const getPost = async (req, res) => {
   res.json(post);
 };
 
-const createPost = async (req, res) => {
-  const { userId, ...postData } = req.body.post;
+const createPost = [
+  isAuthor,
+  async (req, res) => {
+    const { userId, ...postData } = req.body.post;
 
-  const newPost = await prisma.post.create({
-    data: {
-      ...postData,
-      author_id: userId,
-    },
-  });
+    const newPost = await prisma.post.create({
+      data: {
+        ...postData,
+        author_id: userId,
+      },
+    });
 
-  res.json(newPost);
-};
+    res.json(newPost);
+  },
+];
 
-const updatePost = async (req, res) => {
-  const postId = Number(req.params.postId);
-  const { post } = req.body;
+const updatePost = [
+  isAuthor,
+  async (req, res) => {
+    const postId = Number(req.params.postId);
+    const { post } = req.body;
 
-  const updatedPost = await prisma.post.update({
-    where: {
-      id: postId,
-    },
-    data: {
-      ...post,
-      edited_at: new Date(),
-    },
-  });
+    const updatedPost = await prisma.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        ...post,
+        edited_at: new Date(),
+      },
+    });
 
-  res.json(updatedPost);
-};
+    res.json(updatedPost);
+  },
+];
 
-const deletePost = async (req, res) => {
-  const postId = Number(req.params.postId);
+const deletePost = [
+  isAuthor,
+  async (req, res) => {
+    const postId = Number(req.params.postId);
 
-  const deletedPost = await prisma.post.delete({
-    where: {
-      id: postId,
-    },
-  });
+    const deletedPost = await prisma.post.delete({
+      where: {
+        id: postId,
+      },
+    });
 
-  res.json(deletedPost);
-};
+    res.json(deletedPost);
+  },
+];
 
 module.exports = {
   getAllPublishedPosts,
