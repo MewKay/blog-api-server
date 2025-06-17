@@ -1,5 +1,5 @@
 const prisma = require("../config/prisma-client");
-const { isAuthor } = require("../middlewares/auth");
+const { isAuthor, isPostOfAuthor } = require("../middlewares/auth");
 
 const getAllCommentsFromPost = async (req, res) => {
   const postId = Number(req.params.postId);
@@ -47,6 +47,7 @@ const updateComment = async (req, res) => {
 
 const deleteComment = [
   isAuthor,
+  isPostOfAuthor,
   async (req, res) => {
     const commentId = Number(req.params.commentId);
 

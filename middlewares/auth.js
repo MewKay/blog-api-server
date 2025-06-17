@@ -1,4 +1,5 @@
 const passport = require("passport");
+const prisma = require("../config/prisma-client");
 
 const isAuth = (req, res, next) => {
   passport.authenticate("jwt", { session: false }, (error, user) => {
@@ -12,6 +13,7 @@ const isAuth = (req, res, next) => {
       });
     }
 
+    req.user = user;
     next();
   })(req, res, next);
 };
@@ -26,4 +28,22 @@ const isAuthor = (req, res, next) => {
   next();
 };
 
-module.exports = { isAuth, isAuthor };
+const isPostOfAuthor = async (req, res, next) => {
+  const { user } = req;
+  const postId = Number(req.params.postId);
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+      author_id: user.id,
+    },
+  });
+
+  if (!post) {
+    return res.status(403).json({ error: "Post not belonging to author" });
+  }
+
+  next();
+};
+
+module.exports = { isAuth, isAuthor, isPostOfAuthor };

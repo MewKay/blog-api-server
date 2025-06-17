@@ -1,5 +1,5 @@
 const prisma = require("../config/prisma-client");
-const { isAuthor } = require("../middlewares/auth");
+const { isAuthor, isPostOfAuthor } = require("../middlewares/auth");
 
 const getAllPublishedPosts = async (req, res) => {
   const posts = await prisma.post.findMany({
@@ -58,6 +58,7 @@ const createPost = [
 
 const updatePost = [
   isAuthor,
+  isPostOfAuthor,
   async (req, res) => {
     const postId = Number(req.params.postId);
     const { post } = req.body;
@@ -78,6 +79,7 @@ const updatePost = [
 
 const deletePost = [
   isAuthor,
+  isPostOfAuthor,
   async (req, res) => {
     const postId = Number(req.params.postId);
 
