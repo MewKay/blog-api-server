@@ -1,5 +1,7 @@
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const prisma = require("../config/prisma-client");
+const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
 const logInUser = (req, res, next) => {
@@ -25,4 +27,20 @@ const logInUser = (req, res, next) => {
   })(req, res, next);
 };
 
-module.exports = { logInUser };
+const signUpUser = async (req, res) => {
+  const { username, password } = req.body;
+
+  const encryptedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = await prisma.user.create({
+    data: {
+      username,
+      password: encryptedPassword,
+    },
+  });
+  delete newUser.password;
+
+  res.json(newUser);
+};
+
+module.exports = { logInUser, signUpUser };
