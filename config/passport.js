@@ -23,6 +23,7 @@ const verifyLocal = async (username, password, done) => {
       return done(null, false, { message: "Password is invalid" });
     }
 
+    delete user.password;
     return done(null, user);
   } catch (error) {
     return done(error);

@@ -8,6 +8,7 @@ app.use(express.json());
 require("./config/passport");
 
 const routes = require("./routes");
+app.use("/api", routes.auth);
 app.use("/api/posts", routes.post);
 app.use("/api/authors", routes.author);
 app.use("/api/users", routes.user);
