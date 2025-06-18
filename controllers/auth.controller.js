@@ -4,28 +4,37 @@ const prisma = require("../config/prisma-client");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
-const logInUser = (req, res, next) => {
-  passport.authenticate("local", (error, user, info) => {
-    if (error) {
-      return next(error);
-    }
+const {
+  login: logInValidator,
+} = require("../middlewares/validation/validators");
+const logInValidationHandler = require("../middlewares/validation/handlers/login.handler");
 
-    if (!user) {
-      return res.status(401).json({
-        error: info?.message || "Invalid username or password",
-      });
-    }
+const logInUser = [
+  logInValidator,
+  logInValidationHandler,
+  (req, res, next) => {
+    passport.authenticate("local", (error, user, info) => {
+      if (error) {
+        return next(error);
+      }
 
-    const jwtOptions = {
-      subject: user.id.toString(),
-      expiresIn: "7d",
-      algorithm: "HS256",
-    };
-    const token = jwt.sign(user, process.env.JWT_SECRET, jwtOptions);
+      if (!user) {
+        return res.status(401).json({
+          error: info?.message || "Invalid username or password",
+        });
+      }
 
-    res.json({ user, token });
-  })(req, res, next);
-};
+      const jwtOptions = {
+        subject: user.id.toString(),
+        expiresIn: "7d",
+        algorithm: "HS256",
+      };
+      const token = jwt.sign(user, process.env.JWT_SECRET, jwtOptions);
+
+      res.json({ user, token });
+    })(req, res, next);
+  },
+];
 
 const signUpUser = async (req, res) => {
   const { username, password } = req.body;
