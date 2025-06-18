@@ -6,12 +6,14 @@ require("dotenv").config();
 
 const {
   login: logInValidator,
+  signup: signUpValidator,
 } = require("../middlewares/validation/validators");
-const logInValidationHandler = require("../middlewares/validation/handlers/login.handler");
+const validationHandler = require("../middlewares/validation/handler");
+const { matchedData } = require("express-validator");
 
 const logInUser = [
   logInValidator,
-  logInValidationHandler,
+  validationHandler,
   (req, res, next) => {
     passport.authenticate("local", (error, user, info) => {
       if (error) {
@@ -36,20 +38,24 @@ const logInUser = [
   },
 ];
 
-const signUpUser = async (req, res) => {
-  const { username, password } = req.body;
+const signUpUser = [
+  signUpValidator,
+  validationHandler,
+  async (req, res) => {
+    const { username, password } = matchedData(req);
 
-  const encryptedPassword = await bcrypt.hash(password, 10);
+    const encryptedPassword = await bcrypt.hash(password, 10);
 
-  const newUser = await prisma.user.create({
-    data: {
-      username,
-      password: encryptedPassword,
-    },
-  });
-  delete newUser.password;
+    const newUser = await prisma.user.create({
+      data: {
+        username,
+        password: encryptedPassword,
+      },
+    });
+    delete newUser.password;
 
-  res.json(newUser);
-};
+    res.json(newUser);
+  },
+];
 
 module.exports = { logInUser, signUpUser };
