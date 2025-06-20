@@ -1,5 +1,6 @@
 const passport = require("passport");
 const prisma = require("../config/prisma-client");
+const { matchedData } = require("express-validator");
 
 const isAuth = (req, res, next) => {
   passport.authenticate("jwt", { session: false }, (error, user) => {
@@ -30,7 +31,7 @@ const isAuthor = (req, res, next) => {
 
 const isPostOfAuthor = async (req, res, next) => {
   const { user } = req;
-  const postId = Number(req.params.postId);
+  const { postId } = matchedData(req);
 
   const post = await prisma.post.findUnique({
     where: {
@@ -48,7 +49,7 @@ const isPostOfAuthor = async (req, res, next) => {
 
 const isCommentOfUser = async (req, res, next) => {
   const { user } = req;
-  const commentId = Number(req.params.commentId);
+  const { commentId } = matchedData(req);
 
   const comment = await prisma.comment.findUnique({
     where: {

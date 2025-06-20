@@ -1,6 +1,12 @@
 const prisma = require("../config/prisma-client");
 const { isAuthor, isPostOfAuthor } = require("../middlewares/auth");
 
+const {
+  idParam: idParamValidator,
+} = require("../middlewares/validation/validators");
+const validationHandler = require("../middlewares/validation/handler");
+const { matchedData } = require("express-validator");
+
 const getAllPublishedPosts = async (req, res) => {
   const posts = await prisma.post.findMany({
     where: {
@@ -21,24 +27,28 @@ const getAllPublishedPosts = async (req, res) => {
   res.json(posts);
 };
 
-const getPost = async (req, res) => {
-  const postId = Number(req.params.postId);
+const getPost = [
+  idParamValidator("postId"),
+  validationHandler,
+  async (req, res) => {
+    const { postId } = matchedData(req);
 
-  const post = await prisma.post.findUnique({
-    where: {
-      id: postId,
-    },
-    include: {
-      author: {
-        select: {
-          username: true,
+    const post = await prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      include: {
+        author: {
+          select: {
+            username: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  res.json(post);
-};
+    res.json(post);
+  },
+];
 
 const createPost = [
   isAuthor,
@@ -59,9 +69,11 @@ const createPost = [
 
 const updatePost = [
   isAuthor,
+  idParamValidator("postId"),
+  validationHandler,
   isPostOfAuthor,
   async (req, res) => {
-    const postId = Number(req.params.postId);
+    const { postId } = matchedData(req);
     const post = req.body;
 
     const updatedPost = await prisma.post.update({
@@ -80,9 +92,11 @@ const updatePost = [
 
 const deletePost = [
   isAuthor,
+  idParamValidator("postId"),
+  validationHandler,
   isPostOfAuthor,
   async (req, res) => {
-    const postId = Number(req.params.postId);
+    const { postId } = matchedData(req);
 
     const deletedPost = await prisma.post.delete({
       where: {
