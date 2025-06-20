@@ -7,6 +7,7 @@ const {
 
 const {
   idParam: idParamValidator,
+  comment: commentValidator,
 } = require("../middlewares/validation/validators");
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
@@ -29,11 +30,11 @@ const getAllCommentsFromPost = [
 
 const createComment = [
   idParamValidator("postId"),
+  commentValidator,
   validationHandler,
   async (req, res) => {
-    const { postId } = matchedData(req);
     const { user } = req;
-    const { text } = req.body;
+    const { postId, text } = matchedData(req);
 
     const comment = await prisma.comment.create({
       data: {
@@ -50,11 +51,11 @@ const createComment = [
 const updateComment = [
   idParamValidator("postId"),
   idParamValidator("commentId"),
+  commentValidator,
   validationHandler,
   isCommentOfUser,
   async (req, res) => {
-    const { postId, commentId } = matchedData(req);
-    const { text } = req.body;
+    const { postId, commentId, text } = matchedData(req);
 
     const comment = await prisma.comment.update({
       where: {

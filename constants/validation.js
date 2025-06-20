@@ -7,6 +7,10 @@ const ranges = {
     min: 8,
     max: 255,
   },
+  commentText: {
+    min: 1,
+    max: 280,
+  },
 };
 
 module.exports = { ranges };
