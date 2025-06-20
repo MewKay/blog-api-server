@@ -3,6 +3,7 @@ const { isAuthor, isPostOfAuthor } = require("../middlewares/auth");
 
 const {
   idParam: idParamValidator,
+  post: postValidator,
 } = require("../middlewares/validation/validators");
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
@@ -52,13 +53,16 @@ const getPost = [
 
 const createPost = [
   isAuthor,
+  postValidator,
+  validationHandler,
   async (req, res) => {
     const { user } = req;
-    const post = req.body;
+    const { title, text } = matchedData(req);
 
     const newPost = await prisma.post.create({
       data: {
-        ...post,
+        title,
+        text,
         author_id: user.id,
       },
     });
@@ -70,18 +74,19 @@ const createPost = [
 const updatePost = [
   isAuthor,
   idParamValidator("postId"),
+  postValidator,
   validationHandler,
   isPostOfAuthor,
   async (req, res) => {
-    const { postId } = matchedData(req);
-    const post = req.body;
+    const { postId, title, text } = matchedData(req);
 
     const updatedPost = await prisma.post.update({
       where: {
         id: postId,
       },
       data: {
-        ...post,
+        title,
+        text,
         edited_at: new Date(),
       },
     });
