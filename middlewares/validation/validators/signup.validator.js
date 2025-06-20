@@ -1,5 +1,8 @@
 const { ExpressValidator } = require("express-validator");
-const { ranges } = require("../../../constants/validation");
+const {
+  ranges,
+  invalidLengthMessage,
+} = require("../../../constants/validation");
 const prisma = require("../../../config/prisma-client");
 
 const { body } = new ExpressValidator({
@@ -23,23 +26,17 @@ const signUpValidator = [
   body("username")
     .trim()
     .isLength(ranges.username)
-    .withMessage(
-      `Username is required to be between ${ranges.username.min} and ${ranges.username.max} characters.`,
-    )
+    .withMessage(invalidLengthMessage("Username", ranges.username))
     .isAlphanumeric()
     .withMessage("Username can only contain letters and numbers.")
     .bail()
     .isUsernameTaken(),
   body("password")
     .isLength(ranges.password)
-    .withMessage(
-      `Password must be between ${ranges.password.min} and ${ranges.password.max} characters.`,
-    ),
+    .withMessage(invalidLengthMessage("Password", ranges.password)),
   body("confirm_password")
     .isLength(ranges.password)
-    .withMessage(
-      `Password must be between ${ranges.password.min} and ${ranges.password.max} characters.`,
-    )
+    .withMessage(invalidLengthMessage("Password", ranges.password))
     .isPasswordConfirmed()
     .withMessage("Passwords are not matching"),
 ];
