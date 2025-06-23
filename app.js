@@ -8,9 +8,12 @@ app.use(express.json());
 require("./config/passport");
 
 const routes = require("./routes");
+const notFoundRoute = require("./middlewares/not-found-route");
 app.use("/api", routes.auth);
 app.use("/api/posts", routes.post);
 app.use("/api/authors", routes.author);
+
+app.use(notFoundRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`App listening on PORT : ${PORT}`));
