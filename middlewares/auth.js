@@ -2,6 +2,9 @@ const passport = require("passport");
 const prisma = require("../config/prisma-client");
 const { matchedData } = require("express-validator");
 
+const asyncHandler = require("express-async-handler");
+const { Unauthorized, Forbidden } = require("../errors");
+
 const isAuth = (req, res, next) => {
   passport.authenticate("jwt", { session: false }, (error, user) => {
     if (error) {
@@ -9,9 +12,7 @@ const isAuth = (req, res, next) => {
     }
 
     if (!user) {
-      return res.status(401).json({
-        error: "Unauthorized request",
-      });
+      return next(new Unauthorized("Request require authentication."));
     }
 
     req.user = user;
@@ -23,13 +24,13 @@ const isAuthor = (req, res, next) => {
   const { user } = req;
 
   if (!user.is_author) {
-    return res.status(403).json({ error: "Forbidden request" });
+    return next(new Forbidden("Request require valid permissions"));
   }
 
   next();
 };
 
-const isPostOfAuthor = async (req, res, next) => {
+const isPostOfAuthor = asyncHandler(async (req, res, next) => {
   const { user } = req;
   const { postId } = matchedData(req);
 
@@ -41,13 +42,13 @@ const isPostOfAuthor = async (req, res, next) => {
   });
 
   if (!post) {
-    return res.status(403).json({ error: "Post not belonging to author" });
+    throw new Forbidden("Post not belonging to author");
   }
 
   next();
-};
+});
 
-const isCommentOfUser = async (req, res, next) => {
+const isCommentOfUser = asyncHandler(async (req, res, next) => {
   const { user } = req;
   const { commentId } = matchedData(req);
 
@@ -59,10 +60,10 @@ const isCommentOfUser = async (req, res, next) => {
   });
 
   if (!comment) {
-    return res.status(403).json({ error: "Comment not belonging to user" });
+    throw new Forbidden("Comment not belonging to user");
   }
 
   next();
-};
+});
 
 module.exports = { isAuth, isAuthor, isPostOfAuthor, isCommentOfUser };

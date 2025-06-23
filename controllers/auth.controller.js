@@ -11,6 +11,9 @@ const {
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
+const asyncHandler = require("express-async-handler");
+const { Unauthorized } = require("../errors");
+
 const logInUser = [
   logInValidator,
   validationHandler,
@@ -21,9 +24,9 @@ const logInUser = [
       }
 
       if (!user) {
-        return res.status(401).json({
-          error: info?.message || "Invalid username or password",
-        });
+        return next(
+          new Unauthorized(info?.message || "Invalid username or password"),
+        );
       }
 
       const jwtOptions = {
@@ -41,7 +44,7 @@ const logInUser = [
 const signUpUser = [
   signUpValidator,
   validationHandler,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { username, password } = matchedData(req);
 
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -55,7 +58,7 @@ const signUpUser = [
     delete newUser.password;
 
     res.json(newUser);
-  },
+  }),
 ];
 
 module.exports = { logInUser, signUpUser };
