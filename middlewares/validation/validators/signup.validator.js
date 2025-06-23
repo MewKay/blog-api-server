@@ -5,6 +5,8 @@ const {
 } = require("../../../constants/validation");
 const prisma = require("../../../config/prisma-client");
 
+const { Validation } = require("../../../errors");
+
 const { body } = new ExpressValidator({
   isUsernameTaken: async (value) => {
     const user = await prisma.user.findUnique({
@@ -14,7 +16,7 @@ const { body } = new ExpressValidator({
     });
 
     if (user) {
-      throw new Error("Username is already taken");
+      throw new Validation("Username is already taken");
     }
   },
   isPasswordConfirmed: (value, { req }) => {
