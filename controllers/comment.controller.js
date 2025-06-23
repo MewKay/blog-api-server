@@ -12,10 +12,13 @@ const {
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
+const asyncHandler = require("express-async-handler");
+const { NotFound } = require("../errors");
+
 const getAllCommentsFromPost = [
   idParamValidator("postId"),
   validationHandler,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { postId } = matchedData(req);
 
     const comments = await prisma.comment.findMany({
@@ -24,15 +27,19 @@ const getAllCommentsFromPost = [
       },
     });
 
+    if (!comments) {
+      throw new NotFound("Comments could not be fetched");
+    }
+
     res.json(comments);
-  },
+  }),
 ];
 
 const createComment = [
   idParamValidator("postId"),
   commentValidator,
   validationHandler,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { user } = req;
     const { postId, text } = matchedData(req);
 
@@ -45,7 +52,7 @@ const createComment = [
     });
 
     res.json(comment);
-  },
+  }),
 ];
 
 const updateComment = [
@@ -54,7 +61,7 @@ const updateComment = [
   commentValidator,
   validationHandler,
   isCommentOfUser,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { postId, commentId, text } = matchedData(req);
 
     const comment = await prisma.comment.update({
@@ -69,7 +76,7 @@ const updateComment = [
     });
 
     res.json(comment);
-  },
+  }),
 ];
 
 const deleteComment = [
@@ -78,7 +85,7 @@ const deleteComment = [
   idParamValidator("commentId"),
   validationHandler,
   isPostOfAuthor,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { commentId } = matchedData(req);
 
     const comment = await prisma.comment.delete({
@@ -88,7 +95,7 @@ const deleteComment = [
     });
 
     res.json(comment);
-  },
+  }),
 ];
 
 module.exports = {

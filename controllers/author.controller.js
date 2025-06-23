@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma-client");
+const asyncHandler = require("express-async-handler");
 const { isAuthor } = require("../middlewares/auth");
 
 const {
@@ -6,13 +7,19 @@ const {
 } = require("../middlewares/validation/validators");
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
+const { Forbidden, NotFound } = require("../errors");
 
 const getAuthorPosts = [
   isAuthor,
   idParamValidator("authorId"),
   validationHandler,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
+    const { user } = req;
     const { authorId } = matchedData(req);
+
+    if (authorId !== user.id) {
+      throw new Forbidden("Not Author's posts");
+    }
 
     const authorPosts = await prisma.post.findMany({
       where: {
@@ -23,8 +30,12 @@ const getAuthorPosts = [
       },
     });
 
+    if (!authorPosts) {
+      throw new NotFound("Author's posts could not be fetched");
+    }
+
     res.json(authorPosts);
-  },
+  }),
 ];
 
 module.exports = { getAuthorPosts };

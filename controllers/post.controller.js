@@ -8,7 +8,10 @@ const {
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
-const getAllPublishedPosts = async (req, res) => {
+const asyncHandler = require("express-async-handler");
+const { NotFound } = require("../errors");
+
+const getAllPublishedPosts = asyncHandler(async (req, res) => {
   const posts = await prisma.post.findMany({
     where: {
       is_published: true,
@@ -25,13 +28,17 @@ const getAllPublishedPosts = async (req, res) => {
     },
   });
 
+  if (!posts) {
+    throw new NotFound("Posts could not be fetched");
+  }
+
   res.json(posts);
-};
+});
 
 const getPost = [
   idParamValidator("postId"),
   validationHandler,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { postId } = matchedData(req);
 
     const post = await prisma.post.findUnique({
@@ -47,15 +54,19 @@ const getPost = [
       },
     });
 
+    if (!post) {
+      throw new NotFound("Request post does not exist.");
+    }
+
     res.json(post);
-  },
+  }),
 ];
 
 const createPost = [
   isAuthor,
   postValidator,
   validationHandler,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { user } = req;
     const { title, text } = matchedData(req);
 
@@ -68,7 +79,7 @@ const createPost = [
     });
 
     res.json(newPost);
-  },
+  }),
 ];
 
 const updatePost = [
@@ -77,7 +88,7 @@ const updatePost = [
   postValidator,
   validationHandler,
   isPostOfAuthor,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { postId, title, text } = matchedData(req);
 
     const updatedPost = await prisma.post.update({
@@ -92,7 +103,7 @@ const updatePost = [
     });
 
     res.json(updatedPost);
-  },
+  }),
 ];
 
 const deletePost = [
@@ -100,7 +111,7 @@ const deletePost = [
   idParamValidator("postId"),
   validationHandler,
   isPostOfAuthor,
-  async (req, res) => {
+  asyncHandler(async (req, res) => {
     const { postId } = matchedData(req);
 
     const deletedPost = await prisma.post.delete({
@@ -110,7 +121,7 @@ const deletePost = [
     });
 
     res.json(deletedPost);
-  },
+  }),
 ];
 
 module.exports = {
