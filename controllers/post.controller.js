@@ -10,6 +10,7 @@ const { matchedData } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
 const { NotFound } = require("../errors");
+const { transformTextToPreview } = require("../utils/controller.util");
 
 const getAllPublishedPosts = asyncHandler(async (req, res) => {
   const posts = await prisma.post.findMany({
@@ -32,7 +33,9 @@ const getAllPublishedPosts = asyncHandler(async (req, res) => {
     throw new NotFound("Posts could not be fetched");
   }
 
-  res.json(posts);
+  const shortenedPosts = transformTextToPreview(posts);
+
+  res.json(shortenedPosts);
 });
 
 const getPost = [
