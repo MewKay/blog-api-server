@@ -10,7 +10,9 @@ const { matchedData } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
 const { NotFound } = require("../errors");
+
 const { transformTextToPreview } = require("../utils/controller.util");
+const { default: slugify } = require("slugify");
 
 const getAllPublishedPosts = asyncHandler(async (req, res) => {
   const posts = await prisma.post.findMany({
@@ -61,7 +63,9 @@ const getPost = [
       throw new NotFound("Request post does not exist.");
     }
 
-    res.json(post);
+    const slug = slugify(post.title, { lower: true, strict: true });
+
+    res.json({ ...post, slug });
   }),
 ];
 
