@@ -25,6 +25,13 @@ const getAllCommentsFromPost = [
       where: {
         post_id: postId,
       },
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
 
     if (!comments) {
