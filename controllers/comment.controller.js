@@ -32,6 +32,9 @@ const getAllCommentsFromPost = [
           },
         },
       },
+      orderBy: {
+        created_at: "desc",
+      },
     });
 
     if (!comments) {
