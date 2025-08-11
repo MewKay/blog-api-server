@@ -7,9 +7,9 @@ const validationHandler = (req, res, next) => {
     return next();
   }
 
-  const errorsArray = errors.array();
+  const errorsArray = errors.array().map((error) => error.msg);
 
-  res.status(400).json(errorsArray);
+  res.status(400).json({ error: errorsArray });
 };
 
 module.exports = validationHandler;
