@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 
 // General Setup
+const corsConfig = require("./config/cors");
+app.use(corsConfig);
 app.use(express.json());
 
 // Passport Setup
