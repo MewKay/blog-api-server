@@ -12,7 +12,7 @@ const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
-const { Unauthorized } = require("../errors");
+const { Unauthorized, Forbidden } = require("../errors");
 
 const logInUser = [
   logInValidator,
@@ -61,4 +61,31 @@ const signUpUser = [
   }),
 ];
 
-module.exports = { logInUser, signUpUser };
+const signUpAuthor = [
+  signUpValidator,
+  validationHandler,
+  asyncHandler(async (req, res) => {
+    const { username, password } = matchedData(req);
+    const { author_password } = req.body;
+
+    if (author_password !== process.env.AUTHOR_PASSWORD) {
+      throw new Forbidden(
+        "Invalid Authorization Pass. Permission is required to create an author account",
+      );
+    }
+
+    const encryptedPassword = await bcrypt.hash(password, 10);
+    const newAuthor = await prisma.user.create({
+      data: {
+        username,
+        password: encryptedPassword,
+        is_author: true,
+      },
+    });
+    delete newAuthor.password;
+
+    res.json(newAuthor);
+  }),
+];
+
+module.exports = { logInUser, signUpUser, signUpAuthor };
