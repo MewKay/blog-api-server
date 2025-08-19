@@ -8,6 +8,7 @@ const {
 const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 const { Forbidden, NotFound } = require("../errors");
+const { transformTextToPreview } = require("../utils/controller.util");
 
 const getAuthorPosts = [
   isAuthor,
@@ -34,7 +35,8 @@ const getAuthorPosts = [
       throw new NotFound("Author's posts could not be fetched");
     }
 
-    res.json(authorPosts);
+    const shortenedPosts = transformTextToPreview(authorPosts);
+    res.json(shortenedPosts);
   }),
 ];
 
