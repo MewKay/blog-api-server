@@ -13,6 +13,7 @@ const postValidator = [
     .trim()
     .isLength(ranges.postText)
     .withMessage(invalidLengthMessage("Post text", ranges.postText)),
+  body("is_published").isBoolean().withMessage("Invalid publication state"),
 ];
 
 module.exports = postValidator;

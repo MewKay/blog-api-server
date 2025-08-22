@@ -76,12 +76,13 @@ const createPost = [
   validationHandler,
   asyncHandler(async (req, res) => {
     const { user } = req;
-    const { title, text } = matchedData(req);
+    const { title, text, is_published } = matchedData(req);
 
     const newPost = await prisma.post.create({
       data: {
         title,
         text,
+        is_published,
         author_id: user.id,
       },
     });
@@ -97,7 +98,7 @@ const updatePost = [
   validationHandler,
   isPostOfAuthor,
   asyncHandler(async (req, res) => {
-    const { postId, title, text } = matchedData(req);
+    const { postId, title, text, is_published } = matchedData(req);
 
     const updatedPost = await prisma.post.update({
       where: {
@@ -106,6 +107,7 @@ const updatePost = [
       data: {
         title,
         text,
+        is_published,
         edited_at: new Date(),
       },
     });
