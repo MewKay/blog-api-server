@@ -4,5 +4,6 @@ const { isAuth } = require("../middlewares/auth");
 
 router.use(isAuth);
 router.get("/:authorId/posts", controller.getAuthorPosts);
+router.get("/:authorId/posts/:postId", controller.getAuthorPost);
 
 module.exports = router;

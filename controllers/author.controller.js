@@ -40,4 +40,32 @@ const getAuthorPosts = [
   }),
 ];
 
-module.exports = { getAuthorPosts };
+const getAuthorPost = [
+  isAuthor,
+  idParamValidator("authorId"),
+  idParamValidator("postId"),
+  validationHandler,
+  asyncHandler(async (req, res) => {
+    const { user } = req;
+    const { authorId, postId } = matchedData(req);
+
+    if (authorId !== user.id) {
+      throw new Forbidden("Not Author's post");
+    }
+
+    const authorPost = await prisma.post.findUnique({
+      where: {
+        id: postId,
+        author_id: authorId,
+      },
+    });
+
+    if (!authorPost) {
+      throw new NotFound("Author's post could not be fetched");
+    }
+
+    res.json(authorPost);
+  }),
+];
+
+module.exports = { getAuthorPosts, getAuthorPost };
