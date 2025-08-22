@@ -66,4 +66,26 @@ const isCommentOfUser = asyncHandler(async (req, res, next) => {
   next();
 });
 
-module.exports = { isAuth, isAuthor, isPostOfAuthor, isCommentOfUser };
+const isPostPublished = asyncHandler(async (req, res, next) => {
+  const { postId } = matchedData(req);
+
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!post.is_published) {
+    throw new Forbidden("Access to resource denied");
+  }
+
+  next();
+});
+
+module.exports = {
+  isAuth,
+  isAuthor,
+  isPostOfAuthor,
+  isCommentOfUser,
+  isPostPublished,
+};

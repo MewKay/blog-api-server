@@ -9,7 +9,7 @@ const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
-const { NotFound } = require("../errors");
+const { NotFound, Forbidden } = require("../errors");
 
 const { transformTextToPreview } = require("../utils/controller.util");
 
@@ -60,6 +60,10 @@ const getPost = [
 
     if (!post) {
       throw new NotFound("Request post does not exist.");
+    }
+
+    if (!post.is_published) {
+      throw new Forbidden("Permission is required to access this post");
     }
 
     res.json(post);

@@ -3,6 +3,7 @@ const {
   isAuthor,
   isPostOfAuthor,
   isCommentOfUser,
+  isPostPublished,
 } = require("../middlewares/auth");
 
 const {
@@ -49,6 +50,7 @@ const createComment = [
   idParamValidator("postId"),
   commentValidator,
   validationHandler,
+  isPostPublished,
   asyncHandler(async (req, res) => {
     const { user } = req;
     const { postId, text } = matchedData(req);
@@ -70,6 +72,7 @@ const updateComment = [
   idParamValidator("commentId"),
   commentValidator,
   validationHandler,
+  isPostPublished,
   isCommentOfUser,
   asyncHandler(async (req, res) => {
     const { postId, commentId, text } = matchedData(req);
