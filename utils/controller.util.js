@@ -1,7 +1,7 @@
 const transformTextToPreview = function truncatePostsTextToShorterPreview(
   posts,
 ) {
-  const PREVIEW_MAX_LENGTH = 301;
+  const PREVIEW_MAX_LENGTH = 300;
 
   const shortenedPosts = posts.map((post) => {
     let preview;
