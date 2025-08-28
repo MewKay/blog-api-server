@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "NODE_ENV=dev node --watch app.js",
+    "test": "NODE_ENV=test vitest"
   },
   "author": "",
   "license": "ISC",
@@ -28,6 +29,8 @@
     "eslint-config-prettier": "^10.1.5",
     "globals": "^16.0.0",
     "prettier": "3.5.3",
-    "prisma": "6.6.0"
+    "prisma": "6.6.0",
+    "supertest": "^7.1.4",
+    "vitest": "^3.2.4"
   }
 }
