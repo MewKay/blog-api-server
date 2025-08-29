@@ -1,10 +1,10 @@
-import { beforeAll } from "vitest";
+import { beforeEach } from "vitest";
 import prisma from "../config/prisma-client";
 
-beforeAll(async () => {
+beforeEach(async () => {
   await prisma.$transaction([
     prisma.post.deleteMany(),
-    prisma.post.deleteMany(),
+    prisma.user.deleteMany(),
     prisma.comment.deleteMany(),
   ]);
 });
