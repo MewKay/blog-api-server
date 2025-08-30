@@ -5,5 +5,10 @@ export default defineConfig({
     environment: "node",
     globals: true,
     setupFiles: ["./test/setup.mjs"],
+    maxConcurrency: 1,
+    fileParallelism: false,
+    sequence: {
+      shuffle: false,
+    },
   },
 });
