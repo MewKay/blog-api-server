@@ -12,6 +12,7 @@ import {
   assertPostNotExist,
   assertResourcePossession,
 } from "../utils/assertHelpers.mjs";
+import assertMessages from "../utils/assertMessages";
 
 describe("Posts API", () => {
   let posts;
@@ -75,17 +76,17 @@ describe("Posts API", () => {
       );
     });
 
-    it("responds with error message if id is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(request(app).get("/api/posts/abcd"));
     });
 
-    it("responds with error message if post is not found", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app).get(`/api/posts/${notFoundPostId}`),
       );
     });
 
-    it("responds with error message if post is not published", async () => {
+    it(assertMessages.postNotPublished, async () => {
       const notPublishedPost = posts[1];
 
       await assertPostNotPublished(
@@ -116,15 +117,15 @@ describe("Posts API", () => {
       expect(responseGet.body).toEqual(expect.objectContaining(newPost));
     });
 
-    it("responds with auth error if invalid token", async () => {
+    it(assertMessages.auth, async () => {
       await assertAuth(request(app).post("/api/posts"));
     });
 
-    it("responds with forbidden error if auth user is not an author", async () => {
+    it(assertMessages.permission, async () => {
       await assertPermission(request(app).post("/api/posts"));
     });
 
-    it("responds with validation error if invalid inputs", async () => {
+    it(assertMessages.input, async () => {
       await assertInput(request(app).post("/api/posts"), {
         badInput: {
           title:
@@ -141,7 +142,7 @@ describe("Posts API", () => {
       });
     });
 
-    it("responds with error message if post is not found", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app).get(`/api/posts/${notFoundPostId}`),
       );
@@ -179,21 +180,21 @@ describe("Posts API", () => {
       );
     });
 
-    it("responds with auth error if invalid token", async () => {
+    it(assertMessages.auth, async () => {
       await assertAuth(request(app).put(`/api/posts/${toUpdatePost.id}`));
     });
 
-    it("responds with forbidden if auth user is not an author", async () => {
+    it(assertMessages.permission, async () => {
       await assertPermission(request(app).put(`/api/posts/${toUpdatePost.id}`));
     });
 
-    it("responds with error message if post is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(request(app).put(`/api/posts/abcd`), {
         authToken: token,
       });
     });
 
-    it("responds with validation error if invalid inputs", async () => {
+    it(assertMessages.input, async () => {
       await assertInput(request(app).put(`/api/posts/${toUpdatePost}`), {
         badInput: {
           title:
@@ -210,7 +211,7 @@ describe("Posts API", () => {
       });
     });
 
-    it("responds with error message if post is not found", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app).put(`/api/posts/${notFoundPostId}`).send(goodInput),
         {
@@ -219,7 +220,7 @@ describe("Posts API", () => {
       );
     });
 
-    it("responds with error message if post is not created by auth author", async () => {
+    it(assertMessages.resourcePossession("post", "auth author"), async () => {
       await assertResourcePossession(
         request(app).put(`/api/posts/${secondAuthorsPost.id}`).send(goodInput),
         { authToken: token },
@@ -250,30 +251,30 @@ describe("Posts API", () => {
       expect(responseGet.body.error).toMatch(/not exist/i);
     });
 
-    it("responds with auth error if invalid token", async () => {
+    it(assertMessages.auth, async () => {
       await assertAuth(request(app).delete(`/api/posts/${toDeletePost.id}`));
     });
 
-    it("responds with forbidden if auth user is not an author", async () => {
+    it(assertMessages.permission, async () => {
       await assertPermission(
         request(app).delete(`/api/posts/${toDeletePost.id}`),
       );
     });
 
-    it("responds with error message if post is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(request(app).delete(`/api/posts/abcd`), {
         authToken: token,
       });
     });
 
-    it("responds with error message if post is not created by auth author", async () => {
+    it(assertMessages.resourcePossession("post", "auth author"), async () => {
       await assertResourcePossession(
         request(app).delete(`/api/posts/${secondAuthorsPost.id}`),
         { authToken: token },
       );
     });
 
-    it("responds with error message if post is not found", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app).delete(`/api/posts/${notFoundPostId}`),
         {

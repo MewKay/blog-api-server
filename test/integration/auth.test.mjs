@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import prisma from "../../config/prisma-client";
 import { invalidLengthMessage, ranges } from "../../constants/validation";
 import jwt from "jsonwebtoken";
+import assertMessages from "../utils/assertMessages";
+import { assertInput } from "../utils/assertHelpers.mjs";
 
 describe("Authentication API", () => {
   describe("POST /login", () => {
@@ -43,22 +45,15 @@ describe("Authentication API", () => {
       ).toBeTruthy();
     });
 
-    it("responds with error validation messages array if input invalid", async () => {
-      const input = { username: "<InvalidUsername>", password: "no" };
-
-      const response = await request(app)
-        .post("/api/login")
-        .send(input)
-        .expect("Content-Type", /json/)
-        .expect(400);
-
-      expect(response.body.error).toEqual(
-        expect.arrayContaining([
+    it(assertMessages.input, async () => {
+      await assertInput(request(app).post("/api/login"), {
+        badInput: { username: "<InvalidUsername>", password: "no" },
+        expectErrorMessagesArray: [
           invalidLengthMessage("Username", ranges.username),
           invalidLengthMessage("Password", ranges.password),
           "Username can only contain letters and numbers.",
-        ]),
-      );
+        ],
+      });
     });
 
     describe("Auth error", () => {
@@ -161,23 +156,18 @@ describe("Authentication API", () => {
         );
       });
 
-      it("responds with error validation messages array if input invalid", async () => {
-        const response = await request(app)
-          .post("/api/signup")
-          .send({
+      it(assertMessages.input, async () => {
+        await assertInput(request(app).post("/api/signup"), {
+          badInput: {
             username: "<Absolutely invalid username>",
             password: "mypassisthis",
             confirm_password: "no",
-          })
-          .expect("Content-Type", /json/)
-          .expect(400);
-
-        expect(response.body.error).toEqual(
-          expect.arrayContaining([
+          },
+          expectErrorMessagesArray: [
             invalidLengthMessage("Username", ranges.username),
             invalidLengthMessage("Password", ranges.password),
-          ]),
-        );
+          ],
+        });
       });
     });
   });
@@ -257,23 +247,18 @@ describe("Authentication API", () => {
         );
       });
 
-      it("responds with error validation messages array if input invalid", async () => {
-        const response = await request(app)
-          .post("/api/signup-author")
-          .send({
+      it(assertMessages.input, async () => {
+        await assertInput(request(app).post("/api/signup-author"), {
+          badInput: {
             username: "<Absolutely invalid username>",
             password: "mypassisthis",
             confirm_password: "no",
-          })
-          .expect("Content-Type", /json/)
-          .expect(400);
-
-        expect(response.body.error).toEqual(
-          expect.arrayContaining([
+          },
+          expectErrorMessagesArray: [
             invalidLengthMessage("Username", ranges.username),
             invalidLengthMessage("Password", ranges.password),
-          ]),
-        );
+          ],
+        });
       });
 
       it("responds with error if author pass is invalid", async () => {

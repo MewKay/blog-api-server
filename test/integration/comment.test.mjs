@@ -19,6 +19,7 @@ import {
 } from "../utils/assertHelpers.mjs";
 import { invalidLengthMessage, ranges } from "../../constants/validation";
 import isDateSameSeconds from "../utils/isDateSameSeconds";
+import assertMessages from "../utils/assertMessages";
 
 describe("Comments API", () => {
   let author;
@@ -78,11 +79,11 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with error message if id is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(request(app).get("/api/posts/abcd/comments"));
     });
 
-    it("responds with not found error if post id does not exist", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app).get(`/api/posts/${notFoundPostId}/comments`),
       );
@@ -112,17 +113,17 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with auth error if invalid token", async () => {
+    it(assertMessages.auth, async () => {
       await assertAuth(request(app).post(`/api/posts/${post.id}/comments`));
     });
 
-    it("responds with error message if id is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(request(app).post("/api/posts/abcd/comments"), {
         authToken: user.token,
       });
     });
 
-    it("responds with validation error if invalid inputs", async () => {
+    it(assertMessages.input, async () => {
       await assertInput(request(app).post(`/api/posts/${post.id}/comments`), {
         badInput,
         expectErrorMessagesArray: [
@@ -132,7 +133,7 @@ describe("Comments API", () => {
       });
     });
 
-    it("responds with not found error if post id does not exist", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app)
           .post(`/api/posts/${notFoundPostId}/comments`)
@@ -143,7 +144,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with error message if post is not published", async () => {
+    it(assertMessages.postNotPublished, async () => {
       const notPublishedPost = posts[1];
 
       await assertPostNotPublished(
@@ -185,13 +186,13 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with auth error if invalid token", async () => {
+    it(assertMessages.auth, async () => {
       await assertAuth(
         request(app).put(`/api/posts/${post.id}/comments/${userComment.id}`),
       );
     });
 
-    it("responds with error message if id is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(
         request(app)
           .put(`/api/posts/abcd/comments/${userComment.id}`)
@@ -208,7 +209,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with validation error if invalid inputs", async () => {
+    it(assertMessages.input, async () => {
       await assertInput(
         request(app).put(`/api/posts/${post.id}/comments/${userComment.id}`),
         {
@@ -221,7 +222,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with not found error if post id does not exist", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app)
           .put(`/api/posts/${notFoundPostId}/comments/${userComment.id}`)
@@ -232,7 +233,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with error message if post is not published", async () => {
+    it(assertMessages.postNotPublished, async () => {
       await assertPostNotPublished(
         request(app)
           .put(`/api/posts/${notPublishedPost.id}/comments/${userComment.id}`)
@@ -243,7 +244,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with error message if comment is not created by user", async () => {
+    it(assertMessages.resourcePossession("comment", "user"), async () => {
       await assertResourcePossession(
         request(app)
           .put(`/api/posts/${post.id}/comments/${authorComment.id}`)
@@ -272,19 +273,19 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with auth error if invalid token", async () => {
+    it(assertMessages.auth, async () => {
       await assertAuth(
         request(app).delete(`/api/posts/${post.id}/comments/${userComment.id}`),
       );
     });
 
-    it("responds with forbidden if auth user is not an author", async () => {
+    it(assertMessages.permission, async () => {
       await assertPermission(
         request(app).delete(`/api/posts/${post.id}/comments/${userComment.id}`),
       );
     });
 
-    it("responds with error message if id is not an integer", async () => {
+    it(assertMessages.invalidId, async () => {
       await assertInvalidId(
         request(app).delete(`/api/posts/abcd/comments/${userComment.id}`),
         {
@@ -299,7 +300,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with error message if post is not found", async () => {
+    it(assertMessages.postNotExist, async () => {
       await assertPostNotExist(
         request(app).delete(
           `/api/posts/${notFoundPostId}/comments/${userComment.id}`,
@@ -308,7 +309,7 @@ describe("Comments API", () => {
       );
     });
 
-    it("responds with error message if post is not created by auth author", async () => {
+    it(assertMessages.resourcePossession("post", "auth author"), async () => {
       await assertResourcePossession(
         request(app).delete(
           `/api/posts/${secondAuthorsPost.id}/comments/${userComment.id}`,
