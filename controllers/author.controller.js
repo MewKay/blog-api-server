@@ -19,7 +19,7 @@ const getAuthorPosts = [
     const { authorId } = matchedData(req);
 
     if (authorId !== user.id) {
-      throw new Forbidden("Not Author's posts");
+      throw new Forbidden("Posts not belonging to author");
     }
 
     const authorPosts = await prisma.post.findMany({
@@ -30,10 +30,6 @@ const getAuthorPosts = [
         created_at: "desc",
       },
     });
-
-    if (!authorPosts) {
-      throw new NotFound("Author's posts could not be fetched");
-    }
 
     const shortenedPosts = transformTextToPreview(authorPosts);
     res.json(shortenedPosts);
@@ -50,7 +46,7 @@ const getAuthorPost = [
     const { authorId, postId } = matchedData(req);
 
     if (authorId !== user.id) {
-      throw new Forbidden("Not Author's post");
+      throw new Forbidden("Post not belonging to author");
     }
 
     const authorPost = await prisma.post.findUnique({
@@ -61,7 +57,7 @@ const getAuthorPost = [
     });
 
     if (!authorPost) {
-      throw new NotFound("Author's post could not be fetched");
+      throw new NotFound("Requested post does not exist.");
     }
 
     res.json(authorPost);

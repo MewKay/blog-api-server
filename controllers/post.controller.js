@@ -31,10 +31,6 @@ const getAllPublishedPosts = asyncHandler(async (req, res) => {
     },
   });
 
-  if (!posts) {
-    throw new NotFound("Posts could not be fetched");
-  }
-
   const shortenedPosts = transformTextToPreview(posts);
 
   res.json(shortenedPosts);
