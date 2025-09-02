@@ -1,58 +1,38 @@
 import { beforeEach, describe, expect, it, test } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import prisma from "../../config/prisma-client";
-import authAuthor from "../utils/authAuthor";
+import { authAuthor, getNotFoundPostId, seedPosts } from "../utils/seeders";
 import { invalidLengthMessage, ranges } from "../../constants/validation";
 import {
   assertAuth,
   assertPermission,
   assertInput,
   assertInvalidId,
-  assertPostNotOfAuthor,
+  assertPostNotPublished,
+  assertPostNotExist,
+  assertResourcePossession,
 } from "../utils/assertHelpers.mjs";
 
 describe("Posts API", () => {
   let posts;
-  let author;
+  let firstAuthor;
+  let secondAuthor;
   let token;
   let notFoundPostId;
+  let secondAuthorsPost;
 
   beforeEach(async () => {
-    const logged = await authAuthor();
-    author = logged.author;
-    token = logged.token;
+    firstAuthor = await authAuthor();
+    secondAuthor = await authAuthor({
+      username: "Gilbert",
+      password: "19341204",
+    });
 
-    posts = (
-      await prisma.post.createManyAndReturn({
-        data: [
-          {
-            title: "This is a post",
-            text: "Good post",
-            is_published: true,
-            author_id: author.id,
-          },
-          {
-            title: "Secret post",
-            text: "My precious",
-            is_published: false,
-            author_id: author.id,
-          },
-        ],
-      })
-    ).map((post) => ({
-      ...post,
-      created_at: post.created_at.toISOString(),
-      edited_at: post.edited_at.toISOString(),
-    }));
+    token = firstAuthor.token;
+    posts = await seedPosts(firstAuthor.id, secondAuthor.id);
+    secondAuthorsPost = posts[2];
 
-    notFoundPostId = posts.reduce((previousId, currentValue) => {
-      if (currentValue === previousId) {
-        previousId++;
-      }
-
-      return previousId;
-    }, 1);
+    notFoundPostId = getNotFoundPostId(posts);
   });
 
   test("GET /posts responds with list of published posts with preview and author username", async () => {
@@ -100,23 +80,17 @@ describe("Posts API", () => {
     });
 
     it("responds with error message if post is not found", async () => {
-      const response = await request(app)
-        .get(`/api/posts/${notFoundPostId}`)
-        .expect("Content-Type", /json/)
-        .expect(404);
-
-      expect(response.body.error).toMatch(/not exist/i);
+      await assertPostNotExist(
+        request(app).get(`/api/posts/${notFoundPostId}`),
+      );
     });
 
     it("responds with error message if post is not published", async () => {
       const notPublishedPost = posts[1];
 
-      const response = await request(app)
-        .get(`/api/posts/${notPublishedPost.id}`)
-        .expect("Content-Type", /json/)
-        .expect(403);
-
-      expect(response.body.error).toMatch(/permission/i);
+      await assertPostNotPublished(
+        request(app).get(`/api/posts/${notPublishedPost.id}`),
+      );
     });
   });
 
@@ -165,6 +139,12 @@ describe("Posts API", () => {
         ],
         authToken: token,
       });
+    });
+
+    it("responds with error message if post is not found", async () => {
+      await assertPostNotExist(
+        request(app).get(`/api/posts/${notFoundPostId}`),
+      );
     });
   });
 
@@ -230,9 +210,18 @@ describe("Posts API", () => {
       });
     });
 
-    it("responds with error message if post is not created by auth author", async () => {
-      await assertPostNotOfAuthor(
+    it("responds with error message if post is not found", async () => {
+      await assertPostNotExist(
         request(app).put(`/api/posts/${notFoundPostId}`).send(goodInput),
+        {
+          authToken: token,
+        },
+      );
+    });
+
+    it("responds with error message if post is not created by auth author", async () => {
+      await assertResourcePossession(
+        request(app).put(`/api/posts/${secondAuthorsPost.id}`).send(goodInput),
         { authToken: token },
       );
     });
@@ -278,9 +267,18 @@ describe("Posts API", () => {
     });
 
     it("responds with error message if post is not created by auth author", async () => {
-      await assertPostNotOfAuthor(
-        request(app).delete(`/api/posts/${notFoundPostId}`),
+      await assertResourcePossession(
+        request(app).delete(`/api/posts/${secondAuthorsPost.id}`),
         { authToken: token },
+      );
+    });
+
+    it("responds with error message if post is not found", async () => {
+      await assertPostNotExist(
+        request(app).delete(`/api/posts/${notFoundPostId}`),
+        {
+          authToken: token,
+        },
       );
     });
   });

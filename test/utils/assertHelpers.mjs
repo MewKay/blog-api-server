@@ -66,12 +66,33 @@ export const assertInvalidId = async (request, { authToken } = {}) => {
   );
 };
 
-export const assertPostNotOfAuthor = async (request, { authToken }) => {
+export const assertResourcePossession = async (request, { authToken }) => {
+  const response = await request
+    .auth(authToken, { type: "bearer" })
+    .expect("Content-Type", /json/)
+    .expect(403);
+
+  expect(response.body.error).toMatch(/not belonging/i);
+};
+
+export const assertPostNotPublished = async (request, { authToken } = {}) => {
   const token = authToken || "";
 
   const response = await request
     .auth(token, { type: "bearer" })
-    .expect("Content-Type", /json/);
+    .expect("Content-Type", /json/)
+    .expect(403);
 
-  expect(response.body.error).toMatch(/not belonging/i);
+  expect(response.body.error).toMatch("Access to resource denied");
+};
+
+export const assertPostNotExist = async (request, { authToken } = {}) => {
+  const token = authToken || "";
+
+  const response = await request
+    .auth(token, { type: "bearer" })
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  expect(response.body.error).toMatch("Requested post does not exist.");
 };

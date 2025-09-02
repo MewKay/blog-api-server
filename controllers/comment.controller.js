@@ -5,6 +5,7 @@ const {
   isCommentOfUser,
   isPostPublished,
 } = require("../middlewares/auth");
+const isPostExisting = require("../middlewares/isPostExisting");
 
 const {
   idParam: idParamValidator,
@@ -14,11 +15,11 @@ const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
-const { NotFound } = require("../errors");
 
 const getAllCommentsFromPost = [
   idParamValidator("postId"),
   validationHandler,
+  isPostExisting,
   asyncHandler(async (req, res) => {
     const { postId } = matchedData(req);
 
@@ -38,10 +39,6 @@ const getAllCommentsFromPost = [
       },
     });
 
-    if (!comments) {
-      throw new NotFound("Comments could not be fetched");
-    }
-
     res.json(comments);
   }),
 ];
@@ -50,6 +47,7 @@ const createComment = [
   idParamValidator("postId"),
   commentValidator,
   validationHandler,
+  isPostExisting,
   isPostPublished,
   asyncHandler(async (req, res) => {
     const { user } = req;
@@ -72,6 +70,7 @@ const updateComment = [
   idParamValidator("commentId"),
   commentValidator,
   validationHandler,
+  isPostExisting,
   isPostPublished,
   isCommentOfUser,
   asyncHandler(async (req, res) => {
@@ -97,6 +96,7 @@ const deleteComment = [
   idParamValidator("postId"),
   idParamValidator("commentId"),
   validationHandler,
+  isPostExisting,
   isPostOfAuthor,
   asyncHandler(async (req, res) => {
     const { commentId } = matchedData(req);

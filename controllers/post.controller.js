@@ -12,6 +12,7 @@ const asyncHandler = require("express-async-handler");
 const { NotFound, Forbidden } = require("../errors");
 
 const { transformTextToPreview } = require("../utils/controller.util");
+const isPostExisting = require("../middlewares/isPostExisting");
 
 const getAllPublishedPosts = asyncHandler(async (req, res) => {
   const posts = await prisma.post.findMany({
@@ -59,11 +60,11 @@ const getPost = [
     });
 
     if (!post) {
-      throw new NotFound("Request post does not exist.");
+      throw new NotFound("Requested post does not exist.");
     }
 
     if (!post.is_published) {
-      throw new Forbidden("Permission is required to access this post");
+      throw new Forbidden("Access to resource denied");
     }
 
     res.json(post);
@@ -96,6 +97,7 @@ const updatePost = [
   idParamValidator("postId"),
   postValidator,
   validationHandler,
+  isPostExisting,
   isPostOfAuthor,
   asyncHandler(async (req, res) => {
     const { postId, title, text, is_published } = matchedData(req);
@@ -120,6 +122,7 @@ const deletePost = [
   isAuthor,
   idParamValidator("postId"),
   validationHandler,
+  isPostExisting,
   isPostOfAuthor,
   asyncHandler(async (req, res) => {
     const { postId } = matchedData(req);
