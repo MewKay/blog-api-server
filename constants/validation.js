@@ -17,7 +17,7 @@ const ranges = {
   },
   postText: {
     min: 1,
-    max: 1200,
+    max: 20000,
   },
 };
 
