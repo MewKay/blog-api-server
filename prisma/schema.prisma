@@ -19,6 +19,7 @@ model User {
   username  String    @unique
   password  String
   is_author Boolean   @default(false)
+  is_guest  Boolean   @default(false)
   Post      Post[]
   Comment   Comment[]
 
