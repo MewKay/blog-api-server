@@ -272,4 +272,24 @@ describe("Authentication API", () => {
       });
     });
   });
+
+  describe("POST /guest-author", () => {
+    it("responds with the newly created guest and its auth token", async () => {
+      const response = await request(app)
+        .post("/api/guest-author")
+        .expect("Content-Type", /json/)
+        .expect(200);
+
+      expect(response.body.user).toEqual(
+        expect.objectContaining({
+          username: expect.stringContaining("guest"),
+          is_author: true,
+          is_guest: true,
+        }),
+      );
+      expect(
+        jwt.verify(response.body.token, process.env.JWT_SECRET),
+      ).toBeTruthy();
+    });
+  });
 });

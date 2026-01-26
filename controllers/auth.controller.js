@@ -12,6 +12,7 @@ const validationHandler = require("../middlewares/validation/handler");
 const { matchedData } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
+const { customAlphabet } = require("nanoid");
 const { Unauthorized, Forbidden } = require("../errors");
 
 const logInUser = [
@@ -88,4 +89,35 @@ const signUpAuthor = [
   }),
 ];
 
-module.exports = { logInUser, signUpUser, signUpAuthor };
+const createGuestAuthor = asyncHandler(async (req, res) => {
+  const nanoid = customAlphabet(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    8,
+  );
+  const guestUsername = "guest" + nanoid();
+  const guestPassword = "guest_account";
+
+  const guestAuthor = await prisma.user.create({
+    data: {
+      username: guestUsername,
+      password: guestPassword,
+      is_author: true,
+      is_guest: true,
+    },
+  });
+  delete guestAuthor.password;
+
+  const jwtOptions = {
+    subject: guestAuthor.id.toString(),
+    expiresIn: "7d",
+    algorithm: "HS256",
+  };
+  const token = jwt.sign(guestAuthor, process.env.JWT_SECRET, jwtOptions);
+
+  res.json({
+    user: guestAuthor,
+    token,
+  });
+});
+
+module.exports = { logInUser, signUpUser, signUpAuthor, createGuestAuthor };
