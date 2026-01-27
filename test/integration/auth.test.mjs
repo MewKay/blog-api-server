@@ -77,6 +77,23 @@ describe("Authentication API", () => {
           .expect(401);
         expect(response.body.error).toEqual("Password is invalid");
       });
+
+      it("responds with error if username belongs to guest account", async () => {
+        const guestResponse = await request(app).post("/api/guest-author");
+
+        const response = await request(app)
+          .post("/api/login")
+          .send({
+            username: guestResponse.body.user.username,
+            password: "pointless",
+          })
+          .expect("Content-Type", /json/)
+          .expect(401);
+
+        expect(response.body.error).toEqual(
+          "The guest account is no longer accessible",
+        );
+      });
     });
   });
 

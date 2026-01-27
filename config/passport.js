@@ -18,6 +18,12 @@ const verifyLocal = async (username, password, done) => {
       return done(null, false, { message: "User not found" });
     }
 
+    if (user.is_guest) {
+      return done(null, false, {
+        message: "The guest account is no longer accessible",
+      });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return done(null, false, { message: "Password is invalid" });
