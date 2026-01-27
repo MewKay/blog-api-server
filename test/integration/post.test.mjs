@@ -117,6 +117,41 @@ describe("Posts API", () => {
       expect(responseGet.body).toEqual(expect.objectContaining(newPost));
     });
 
+    it("responds with error if the author is guest who has created the maximum of allowed posts (5)", async () => {
+      const guestPosts = [
+        { title: "Sunlit", text: "Morning run", is_published: true },
+        { title: "Byte", text: "Tiny hack", is_published: false },
+        { title: "Mint", text: "Fresh idea", is_published: true },
+        { title: "Glimpse", text: "Quick note", is_published: false },
+        { title: "Drift", text: "Short thought", is_published: true },
+      ];
+      const newPost = {
+        title: "New Post",
+        text: "I am writing my thoughts",
+        is_published: true,
+      };
+
+      const guestCreateResponse = await request(app).post("/api/guest-author");
+      const guestToken = guestCreateResponse.body.token;
+
+      for (let post of guestPosts) {
+        await request(app)
+          .post("/api/posts")
+          .auth(guestToken, { type: "bearer" })
+          .send(post);
+      }
+
+      await request(app)
+        .post("/api/posts")
+        .auth(guestToken, { type: "bearer" })
+        .send(newPost)
+        .expect("Content-Type", /json/)
+        .expect(403);
+
+      const postListResponse = await request(app).get("/api/posts");
+      expect(postListResponse.body).not.toContainEqual(newPost);
+    });
+
     it(assertMessages.auth, async () => {
       await assertAuth(request(app).post("/api/posts"));
     });

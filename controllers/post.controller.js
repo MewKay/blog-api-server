@@ -75,6 +75,18 @@ const createPost = [
     const { user } = req;
     const { title, text, is_published } = matchedData(req);
 
+    if (user.is_guest) {
+      const guestPostCount = await prisma.post.count({
+        where: {
+          author_id: user.id,
+        },
+      });
+
+      if (guestPostCount >= 5) {
+        throw new Forbidden("Guest accounts can not create more than 5 posts.");
+      }
+    }
+
     const newPost = await prisma.post.create({
       data: {
         title,
