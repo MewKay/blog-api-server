@@ -34,6 +34,44 @@ const getAuthor = [
   }),
 ];
 
+const getLimitStatus = [
+  idParamValidator("authorId"),
+  validationHandler,
+  asyncHandler(async (req, res) => {
+    const { authorId } = matchedData(req);
+    const limitStatus = {
+      isLimitReached: false,
+      postRemaining: null,
+    };
+    const guestPostLimit = 5;
+
+    const guestAuthor = await prisma.user.findUnique({
+      where: {
+        id: authorId,
+      },
+    });
+
+    if (!guestAuthor) {
+      throw new NotFound("Author not found");
+    }
+
+    if (!guestAuthor.is_guest) {
+      return res.json(limitStatus);
+    }
+
+    const postCount = await prisma.post.count({
+      where: {
+        author_id: guestAuthor.id,
+      },
+    });
+
+    limitStatus.isLimitReached = postCount >= guestPostLimit;
+    limitStatus.postRemaining = guestPostLimit - postCount;
+
+    res.json(limitStatus);
+  }),
+];
+
 const getAuthorPosts = [
   isAuthor,
   idParamValidator("authorId"),
@@ -88,4 +126,4 @@ const getAuthorPost = [
   }),
 ];
 
-module.exports = { getAuthor, getAuthorPosts, getAuthorPost };
+module.exports = { getAuthor, getLimitStatus, getAuthorPosts, getAuthorPost };

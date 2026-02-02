@@ -70,6 +70,71 @@ describe("Author API", () => {
     });
   });
 
+  describe("GET /authors/:authorId/limit-status", () => {
+    it("responds with guest author limit status", async () => {
+      const guestCreateResponse = await request(app).post("/api/guest-author");
+      const { user: guestAuthor, token: guestToken } = guestCreateResponse.body;
+
+      const newPost = {
+        title: "New Post",
+        text: "I am writing my thoughts",
+        is_published: true,
+      };
+      await request(app)
+        .post("/api/posts")
+        .auth(guestToken, { type: "bearer" })
+        .send(newPost);
+
+      const response = await request(app)
+        .get(`/api/authors/${guestAuthor.id}/limit-status`)
+        .auth(guestToken, { type: "bearer" })
+        .expect("Content-Type", /json/)
+        .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          isLimitReached: false,
+          postRemaining: 4,
+        }),
+      );
+    });
+
+    it("responds with error message if author is not found", async () => {
+      const response = await request(app)
+        .get(`/api/authors/${0}/limit-status`)
+        .auth(author.token, { type: "bearer" })
+        .expect("Content-Type", /json/)
+        .expect(404);
+
+      expect(response.body.error).toMatch("Author not found");
+    });
+
+    it("responds with 'postRemaining' field to null if author is not a guest", async () => {
+      const response = await request(app)
+        .get(`/api/authors/${author.id}/limit-status`)
+        .auth(author.token, { type: "bearer" })
+        .expect("Content-Type", /json/)
+        .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          isLimitReached: false,
+          postRemaining: null,
+        }),
+      );
+    });
+
+    it(assertMessages.auth, async () => {
+      await assertAuth(request(app).get(`/api/authors/${0}/limit-status`));
+    });
+
+    it(assertMessages.invalidId, async () => {
+      await assertInvalidId(request(app).get(`/api/authors/id/limit-status`), {
+        authToken: author.token,
+      });
+    });
+  });
+
   describe("GET /authors/:authorId/posts", () => {
     it("responds with list of author's posts with preview", async () => {
       const response = await request(app)
