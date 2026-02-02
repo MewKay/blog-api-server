@@ -10,6 +10,30 @@ const { matchedData } = require("express-validator");
 const { Forbidden, NotFound } = require("../errors");
 const { transformTextToPreview } = require("../utils/controller.util");
 
+const getAuthor = [
+  idParamValidator("authorId"),
+  validationHandler,
+  asyncHandler(async (req, res) => {
+    const { authorId } = matchedData(req);
+
+    const author = await prisma.user.findUnique({
+      where: {
+        id: authorId,
+        is_author: true,
+      },
+    });
+
+    if (!author) {
+      throw new NotFound("Author not found");
+    }
+
+    res.json({
+      id: author.id,
+      username: author.username,
+    });
+  }),
+];
+
 const getAuthorPosts = [
   isAuthor,
   idParamValidator("authorId"),
@@ -64,4 +88,4 @@ const getAuthorPost = [
   }),
 ];
 
-module.exports = { getAuthorPosts, getAuthorPost };
+module.exports = { getAuthor, getAuthorPosts, getAuthorPost };

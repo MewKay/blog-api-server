@@ -33,6 +33,43 @@ describe("Author API", () => {
     notFoundPostId = getNotFoundPostId(posts);
   });
 
+  describe("GET /authors/:authorId", () => {
+    it("responds with author's id and username", async () => {
+      const response = await request(app)
+        .get(`/api/authors/${author.id}`)
+        .auth(author.token, { type: "bearer" })
+        .expect("Content-Type", /json/)
+        .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: author.id,
+          username: author.username,
+        }),
+      );
+    });
+
+    it("responds with error message if author is not found", async () => {
+      const response = await request(app)
+        .get(`/api/authors/${0}`)
+        .auth(author.token, { type: "bearer" })
+        .expect("Content-Type", /json/)
+        .expect(404);
+
+      expect(response.body.error).toMatch("Author not found");
+    });
+
+    it(assertMessages.auth, async () => {
+      await assertAuth(request(app).get(`/api/authors/${author.id}`));
+    });
+
+    it(assertMessages.invalidId, async () => {
+      await assertInvalidId(request(app).get(`/api/authors/notId`), {
+        authToken: author.token,
+      });
+    });
+  });
+
   describe("GET /authors/:authorId/posts", () => {
     it("responds with list of author's posts with preview", async () => {
       const response = await request(app)

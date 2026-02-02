@@ -3,6 +3,7 @@ const { author: controller } = require("../controllers");
 const { isAuth } = require("../middlewares/auth");
 
 router.use(isAuth);
+router.get("/:authorId", controller.getAuthor);
 router.get("/:authorId/posts", controller.getAuthorPosts);
 router.get("/:authorId/posts/:postId", controller.getAuthorPost);
 
