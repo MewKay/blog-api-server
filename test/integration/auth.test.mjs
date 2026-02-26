@@ -6,7 +6,7 @@ import prisma from "../../config/prisma-client";
 import { invalidLengthMessage, ranges } from "../../constants/validation";
 import jwt from "jsonwebtoken";
 import assertMessages from "../utils/assertMessages";
-import { assertInput } from "../utils/assertHelpers.mjs";
+import { assertAuth, assertInput } from "../utils/assertHelpers.mjs";
 
 describe("Authentication API", () => {
   describe("POST /login", () => {
@@ -307,6 +307,62 @@ describe("Authentication API", () => {
       expect(
         jwt.verify(response.body.token, process.env.JWT_SECRET),
       ).toBeTruthy();
+    });
+  });
+
+  describe("POST /upgrade-user", () => {
+    const goodInput = {
+      username: "Jonny10",
+      password: "wordpass",
+    };
+    let token;
+
+    beforeEach(async () => {
+      await prisma.user.create({
+        data: {
+          username: goodInput.username,
+          password: bcrypt.hashSync(goodInput.password),
+        },
+      });
+
+      const loginResponse = await request(app)
+        .post("/api/login")
+        .send(goodInput);
+
+      token = loginResponse.body.token;
+    });
+
+    it("responds with updated user and token", async () => {
+      const response = await request(app)
+        .post("/api/upgrade-user")
+        .auth(token, { type: "bearer" })
+        .send({ author_password: process.env.AUTHOR_PASSWORD })
+        .expect("Content-Type", /json/)
+        .expect(200);
+
+      expect(response.body.user).toEqual(
+        expect.objectContaining({
+          username: goodInput.username,
+        }),
+      );
+      expect(
+        jwt.verify(response.body.token, process.env.JWT_SECRET),
+      ).toBeTruthy();
+    });
+
+    it(assertMessages.auth, async () => {
+      assertAuth(request(app).post("/api/upgrade-user"));
+    });
+
+    it("responds with error if author pass is invalid", async () => {
+      const response = await request(app)
+        .post("/api/upgrade-user")
+        .auth(token, { type: "bearer" })
+        .send({ author_password: "invalid author pass" })
+        .expect("Content-Type", /json/)
+        .expect(403);
+
+      expect(response.body.error).toMatch(/invalid authorization pass/i);
     });
   });
 });
